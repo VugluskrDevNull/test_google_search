@@ -17,6 +17,7 @@ class Downloader : public QObject
 public:
     explicit Downloader(QObject *parent = 0);
     void doDownload();
+    QFile *file;
 signals:
 public slots:
     void replyFinished (QNetworkReply *reply);
