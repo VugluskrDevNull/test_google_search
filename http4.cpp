@@ -1,8 +1,4 @@
 #include "http4.h"
-#include <QtXml>
-#include <QSslSocket>
-#include <QtXml>
-
 
 Downloader::Downloader(QObject *parent) :
     QObject(parent)
@@ -55,11 +51,63 @@ void Downloader::replyFinished (QNetworkReply *reply)
         {
             qDebug() << "if(file->open(QFile::Append))\n";                //
             file->write(reply->readAll());
+            file->close();
+      /**/  QDomDocument doc("title");
+            QDomElement  domElement = doc.createElement("title");
+            doc.appendChild(domElement);
+            if(file->open(QIODevice::WriteOnly))
+            {
+                qDebug() << "3 if\n" ;                            //
+                QTextStream(file) << doc.toString();
+                file->close();
+                if(file->open(QIODevice::ReadOnly))
+                {
+                    qDebug() << "1 if\n" ;                            //
+                    if(doc.setContent(file))
+                    {
+                        qDebug() << "2 if\n" ;                            //
+                        domElement= doc.documentElement();
+                        traverseNode(domElement);
+                    }
+                    file->close();
+                }
+       /**/ }
+
             file->flush();
             file->close();
         }
         delete file;
     }
     reply->deleteLater();
-     qDebug() << "out of replyFinished\n" ;                            //
+    qDebug() << "out of replyFinished\n" ;                            //
+}
+
+void Downloader::traverseNode(const QDomNode& node)
+{
+   qDebug()<<"traverseNode\n";                         //
+   QDomNode domNode = node.firstChild();
+   while (!domNode.isNull()) {
+       qDebug()<<"!domNode.isNull())\n";                         //
+       if (domNode.isElement()) {
+          qDebug()<<" if (domNode.isElement())\n";                         //
+          QDomElement domElement = domNode.toElement();
+          if (!domElement.isNull()) {
+              qDebug()<<" !domElement.isNull()\n";                         //
+               if (domNode.isElement()) {
+                 qDebug()<<" domNode.isElement\n";                         //
+                 if (domElement.tagName() == "h3") {                              // поиск по тэгу h3
+                    qDebug()<<" domElement.tagName()\n";                         //
+                    qDebug() << "title: "  << domElement.attribute("h3", "");
+                 }
+                 else {
+                     qDebug() << "title not found\n" ;
+                 }
+               }
+          }
+       }
+       traverseNode(domNode);
+       qDebug()<<"traverseNode(domNode)\n";                         //
+       domNode = domNode.nextSibling();
+       qDebug()<<"domNode = domNode.nextSibling()\n";                         //
+    }
 }

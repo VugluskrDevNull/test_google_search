@@ -9,7 +9,10 @@
 #include <QDateTime>
 #include <QFile>
 #include <QDebug>
-
+#include <QCoreApplication>
+#include <QtXml>
+#include <QSslSocket>
+#include <QDomDocument>
 
 class Downloader : public QObject
 {
@@ -22,7 +25,8 @@ signals:
 public slots:
     void replyFinished (QNetworkReply *reply);
 private:
-   QNetworkAccessManager *manager;
+    QNetworkAccessManager *manager;
+  void  traverseNode(const QDomNode& );
 };
 
 
