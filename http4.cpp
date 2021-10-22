@@ -8,31 +8,21 @@ Downloader::Downloader(QObject *parent) :
 
 void Downloader::doDownload()
 {
-    qDebug() << "doDownload\n" ;                            //
     manager = new QNetworkAccessManager(this);
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
-   // QNetworkRequest request(QUrl("https://www.google.com/search?q=%D1%82%D0%BE%D0%BF+%D0%B6%D0%B6&ie=utf-8&oe=utf-8"));  // топ жж  (кракозябры)
+    QNetworkRequest request(QUrl("https://www.google.com/search?q=%D1%82%D0%BE%D0%BF+%D0%B6%D0%B6&ie=utf-8&oe=utf-8"));  // топ жж  (кракозябры)
    // QNetworkRequest request(QUrl("https://www.google.com/search?q=github&ie=utf-8&oe=utf-8"));                            // git hub
-    QNetworkRequest request(QUrl("https://www.google.com/search?q=doc.qt.io%2F&ie=utf-8&oe=utf-8"));                       // doc.qt.io (фигня)
+   // QNetworkRequest request(QUrl("https://www.google.com/search?q=doc.qt.io%2F&ie=utf-8&oe=utf-8"));                       // doc.qt.io (фигня)
     QSslConfiguration config(QSslConfiguration::defaultConfiguration());
     config.setProtocol(QSsl::TlsV1SslV3);
     request.setSslConfiguration(config);
     manager->get(request);
-    qDebug() << "out of doDownload\n" ;                            //
 }
 
-    /*
-void Downloader::doDownload()
-{
-    manager = new QNetworkAccessManager(this);
-    connect(manager, SIGNAL(finished(QNetworkReply*)),  this, SLOT(replyFinished(QNetworkReply*)));
-    manager->get(QNetworkRequest(QUrl("http://google.com")));
-}
-*/
 
 void Downloader::replyFinished (QNetworkReply *reply)
 {
-    qDebug() << "replyFinished\n" ;                            //
+    QString str="";
     if(reply->error())
     {
         qDebug() << "ERROR!";
@@ -46,68 +36,61 @@ void Downloader::replyFinished (QNetworkReply *reply)
         qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
 
-    //    QFile *file = new QFile("C:/Qt/Dummy/downloaded.txt");
         if(file->open(QFile::Append))
         {
-            qDebug() << "if(file->open(QFile::Append))\n";                //
             file->write(reply->readAll());
             file->close();
-      /**/  QDomDocument doc("title");
-            QDomElement  domElement = doc.createElement("title");
-            doc.appendChild(domElement);
-            if(file->open(QIODevice::WriteOnly))
+        /*    if(file->open(QIODevice::WriteOnly))
             {
-                qDebug() << "3 if\n" ;                            //
-                QTextStream(file) << doc.toString();
-                file->close();
-                if(file->open(QIODevice::ReadOnly))
+                while(!file->atEnd())
                 {
-                    qDebug() << "1 if\n" ;                            //
-                    if(doc.setContent(file))
-                    {
-                        qDebug() << "2 if\n" ;                            //
-                        domElement= doc.documentElement();
-                        traverseNode(domElement);
-                    }
-                    file->close();
+                    str=str+file->readLine();
                 }
-       /**/ }
+                QDomDocument doc(str);
+                QDomElement  domElement = doc.createElement(str);
+                doc.appendChild(domElement);
+                    QTextStream(file) << doc.toString();
+                    file->close();
+                    if(file->open(QIODevice::ReadOnly))
+                    {
 
-            file->flush();
-            file->close();
+                        if(doc.setContent(file))
+                        {
+                            domElement= doc.documentElement();
+                            traverseNode(domElement);
+                        }
+                        file->close();
+                    }
+                }  */
+
+                file->flush();
+                file->close();
+            }
+            delete file;
         }
-        delete file;
-    }
-    reply->deleteLater();
-    qDebug() << "out of replyFinished\n" ;                            //
+        reply->deleteLater();
 }
 
 void Downloader::traverseNode(const QDomNode& node)
 {
-   qDebug()<<"traverseNode\n";                         //
    QDomNode domNode = node.firstChild();
    while (!domNode.isNull()) {
-       qDebug()<<"!domNode.isNull())\n";                         //
        if (domNode.isElement()) {
-          qDebug()<<" if (domNode.isElement())\n";                         //
           QDomElement domElement = domNode.toElement();
           if (!domElement.isNull()) {
-              qDebug()<<" !domElement.isNull()\n";                         //
                if (domNode.isElement()) {
-                 qDebug()<<" domNode.isElement\n";                         //
-                 if (domElement.tagName() == "h3") {                              // поиск по тэгу h3
-                    qDebug()<<" domElement.tagName()\n";                         //
-                    qDebug() << "title: "  << domElement.attribute("h3", "");
-                 }
-                 else {
-                     qDebug() << "title not found\n" ;
-                 }
+                   if (domElement.tagName() == "h3")
+                   {                              // поиск по тэгу h3
+                      qDebug()<<" domElement.tagName()\n";                         //
+                      qDebug() << "title: "  << domElement.attribute("h3", "");
+                   }
+                   else {
+                       qDebug() << "title not found\n" ;
+                   }
                }
           }
        }
        traverseNode(domNode);
-       qDebug()<<"traverseNode(domNode)\n";                         //
        domNode = domNode.nextSibling();
-       qDebug()<<"domNode = domNode.nextSibling()\n";                         //
     }
 }
