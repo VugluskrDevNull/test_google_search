@@ -39,36 +39,26 @@ void Downloader::replyFinished (QNetworkReply *reply)
         if(file->open(QFile::Append))
         {
             file->write(reply->readAll());
+            file->flush();
             file->close();
-        /*    if(file->open(QIODevice::WriteOnly))
-            {
-                while(!file->atEnd())
-                {
-                    str=str+file->readLine();
-                }
-                QDomDocument doc(str);
-                QDomElement  domElement = doc.createElement(str);
-                doc.appendChild(domElement);
-                    QTextStream(file) << doc.toString();
-                    file->close();
-                    if(file->open(QIODevice::ReadOnly))
-                    {
-
-                        if(doc.setContent(file))
-                        {
-                            domElement= doc.documentElement();
-                            traverseNode(domElement);
-                        }
-                        file->close();
-                    }
-                }  */
-
-                file->flush();
-                file->close();
-            }
-            delete file;
         }
-        reply->deleteLater();
+        QDomDocument doc;
+        QDomElement  domElement;
+        if(file->open(QIODevice::ReadOnly))
+        {
+            if(doc.setContent(file))
+            {
+                domElement= doc.documentElement();
+                traverseNode(domElement);
+            }
+            else {
+                qDebug()<<"doc.setContent(file) false";
+            }
+            file->close();
+         }
+      }
+      delete file;
+      reply->deleteLater();
 }
 
 void Downloader::traverseNode(const QDomNode& node)
