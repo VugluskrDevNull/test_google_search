@@ -3,7 +3,7 @@
 Downloader::Downloader(QObject *parent) :
     QObject(parent)
 {
-    file = new QFile("C:/Qt/Dummy/downloaded.txt");
+    file = new QFile("C:/Qt/Dummy/downloaded.xml");
 }
 
 void Downloader::doDownload()
@@ -44,15 +44,18 @@ void Downloader::replyFinished (QNetworkReply *reply)
         }
         QDomDocument doc;
         QDomElement  domElement;
+        QString errorMsg;
+        int errorLine;
+        int errorColumn;
         if(file->open(QIODevice::ReadOnly))
         {
-            if(doc.setContent(file))
+            if(doc.setContent(file, & errorMsg,  & errorLine, & errorColumn))
             {
                 domElement= doc.documentElement();
                 traverseNode(domElement);
             }
             else {
-                qDebug()<<"doc.setContent(file) false";
+                qWarning("Invalid XML Error = %s, Line = %d, Column = %d",  qPrintable(errorMsg), errorLine, errorColumn);
             }
             file->close();
          }
