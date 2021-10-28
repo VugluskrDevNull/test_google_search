@@ -50,7 +50,20 @@ void Downloader::replyFinished (QNetworkReply *reply)
         int errorColumn;
         if(file->open(QIODevice::ReadOnly))
         {
-            if(doc.setContent(file, & errorMsg,  & errorLine, & errorColumn))
+            QXmlInputSource src(file);
+
+            // ======== For Qt > 5.15
+            //QString html = file->readAll();
+            //QXmlStreamReader reader(html);
+            //if(doc.setContent(&reader, false, &errorMsg, &errorLine, &errorColumn))
+            // ========
+
+            // ========
+            //QXmlSimpleReader reader;
+            //if(doc.setContent(&src, &reader, &errorMsg, &errorLine, &errorColumn))
+            // ========
+
+            if(doc.setContent(&src, false, &errorMsg, &errorLine, &errorColumn))
             {
                 domElement= doc.documentElement();
                 traverseNode(domElement);
