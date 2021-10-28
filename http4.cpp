@@ -37,7 +37,7 @@ void Downloader::replyFinished (QNetworkReply *reply)
         qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
 
-        if(file->open(QFile::Append))
+        if(file->open(QFile::Truncate | QIODevice::ReadWrite))
         {
             file->write(reply->readAll());
             file->flush();
