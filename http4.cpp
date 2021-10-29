@@ -11,6 +11,7 @@ void Downloader::doDownload()
     manager = new QNetworkAccessManager(this);
     connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)));
     QNetworkRequest request(QUrl("https://www.google.com/search?q=%D1%82%D0%BE%D0%BF+%D0%B6%D0%B6&ie=utf-8&oe=utf-8"));  // топ жж  (кракозябры)
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
    // QNetworkRequest request(QUrl("https://www.google.com/search?q=github&ie=utf-8&oe=utf-8"));                            // git hub
    // QNetworkRequest request(QUrl("https://www.google.com/search?q=doc.qt.io%2F&ie=utf-8&oe=utf-8"));                       // doc.qt.io (фигня)
     QSslConfiguration config(QSslConfiguration::defaultConfiguration());
@@ -36,7 +37,7 @@ void Downloader::replyFinished (QNetworkReply *reply)
         qDebug() << reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
         qDebug() << reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
 
-        if(file->open(QFile::Append))
+        if(file->open(QFile::Truncate | QIODevice::ReadWrite))
         {
             file->write(reply->readAll());
             file->flush();
@@ -49,7 +50,20 @@ void Downloader::replyFinished (QNetworkReply *reply)
         int errorColumn;
         if(file->open(QIODevice::ReadOnly))
         {
-            if(doc.setContent(file, & errorMsg,  & errorLine, & errorColumn))
+            QXmlInputSource src(file);
+
+            // ======== For Qt > 5.15
+            //QString html = file->readAll();
+            //QXmlStreamReader reader(html);
+            //if(doc.setContent(&reader, false, &errorMsg, &errorLine, &errorColumn))
+            // ========
+
+            // ========
+            //QXmlSimpleReader reader;
+            //if(doc.setContent(&src, &reader, &errorMsg, &errorLine, &errorColumn))
+            // ========
+
+            if(doc.setContent(&src, false, &errorMsg, &errorLine, &errorColumn))
             {
                 domElement= doc.documentElement();
                 traverseNode(domElement);
